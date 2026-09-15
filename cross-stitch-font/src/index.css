@@ -740,3 +740,86 @@ textarea {
     flex: 1 1 280px;
   }
 }
+
+/* ===== font tabs (multiple fonts) ===== */
+.font-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 6px 10px 0;
+  background: #23262c;
+  border-bottom: 2px solid var(--border);
+  overflow-x: auto;
+}
+
+.font-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 12px;
+  background: #3a3f47;
+  color: #d7dbe0;
+  border: 1px solid #000;
+  border-bottom: none;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 12px;
+  max-width: 220px;
+}
+
+.font-tab.is-active {
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.font-tab.drop-before {
+  box-shadow: inset 3px 0 0 var(--hl);
+}
+
+.font-tab-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.font-tab-input {
+  font-family: inherit;
+  font-size: 12px;
+  width: 130px;
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+}
+
+.font-tab-btn {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 2px 3px;
+  opacity: 0.6;
+}
+
+.font-tab-btn:hover {
+  opacity: 1;
+}
+
+.font-tab-close:hover {
+  color: #e5484d;
+}
+
+.font-tab-add {
+  border: 1px solid #000;
+  border-bottom: none;
+  background: #23262c;
+  color: #d7dbe0;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.font-tab-add:hover {
+  background: #3a3f47;
+}

@@ -10,12 +10,13 @@ import {
 
 interface Props {
   project: Project;
-  onImport: (project: Project) => void;
-  onReset: () => void;
+  /** Imported files open as new font tabs. */
+  onImport: (projects: Project[]) => void;
+  onNewFont: () => void;
   onClearFont: () => void;
 }
 
-export default function ExportPanel({ project, onImport, onReset, onClearFont }: Props) {
+export default function ExportPanel({ project, onImport, onNewFont, onClearFont }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const drawnCount = Object.values(project.glyphs).filter((g) => g.stitches.size > 0).length;
@@ -51,13 +52,17 @@ export default function ExportPanel({ project, onImport, onReset, onClearFont }:
     }
   };
 
-  const importFile = async (file: File) => {
+  const importFiles = async (files: FileList) => {
     setError(null);
-    try {
-      onImport(deserializeProject(await file.text()));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+    const projects = [];
+    for (const file of Array.from(files)) {
+      try {
+        projects.push(deserializeProject(await file.text()));
+      } catch {
+        setError(`Couldn't read ${file.name}.`);
+      }
     }
+    if (projects.length) onImport(projects);
   };
 
   return (
@@ -98,13 +103,17 @@ export default function ExportPanel({ project, onImport, onReset, onClearFont }:
         ref={fileRef}
         type="file"
         accept=".json,application/json"
+        multiple
         hidden
         onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) void importFile(file);
+          if (e.target.files && e.target.files.length) void importFiles(e.target.files);
           e.target.value = '';
         }}
       />
+      <p className="hint">Import opens each file as a new font tab.</p>
+      <button className="btn btn-quiet" onClick={onNewFont}>
+        New font
+      </button>
       <button
         className="btn btn-quiet btn-danger"
         onClick={() => {
@@ -117,15 +126,6 @@ export default function ExportPanel({ project, onImport, onReset, onClearFont }:
         }}
       >
         Clear all glyphs
-      </button>
-      <button
-        className="btn btn-quiet btn-danger"
-        onClick={() => {
-          if (window.confirm('Start a new project? This erases everything, including settings.'))
-            onReset();
-        }}
-      >
-        New project
       </button>
       <p className="hint">Progress autosaves in this browser.</p>
     </section>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { SetStateAction } from 'react';
 import type { CustomGuide, GridMetrics, Project, Stitch, StitchShade, StitchType } from './lib/model';
 import {
   MAX_GRID_SIZE,
@@ -6,23 +7,23 @@ import {
   cellKey,
   clampGuides,
   clampMetrics,
-  createProject,
   defaultMetrics,
   makeStitch,
   metricsEqual,
+  newGuideId,
   parseKey,
   stitchesEqual,
 } from './lib/model';
-import type { DraftMap } from './lib/projectStorage';
+import type { DraftMap, FontEntry, Library } from './lib/projectStorage';
 import {
-  clearSavedDrafts,
-  clearSavedProject,
-  loadDrafts,
-  loadProject,
-  saveDrafts,
-  saveProject,
+  createFontEntry,
+  deserializeProject,
+  loadLibrary,
+  newFontId,
+  saveLibrary,
 } from './lib/projectStorage';
 import { GLYPH_SET, SAMPLER_TEXT } from './lib/glyphSet';
+import FontTabs from './components/FontTabs';
 import GlyphNavigator from './components/GlyphNavigator';
 import StitchGrid from './components/StitchGrid';
 import GlyphPreview from './components/GlyphPreview';
@@ -66,9 +67,37 @@ const TOOLBAR_TIP =
   'selection to move it, ⌘C / ⌘V copy and paste, ⌫ deletes it, Esc clears it';
 
 export default function App() {
-  const [project, setProject] = useState<Project>(loadProject);
+  // the library holds every font; the active one drives the whole editor
+  const [library, setLibrary] = useState<Library>(loadLibrary);
+  const activeId = library.activeId;
+  const active = library.fonts.find((f) => f.id === activeId) ?? library.fonts[0];
+  const project = active.project;
   // unsaved, per-character work — only "Save glyph" burns a draft into the font
-  const [drafts, setDrafts] = useState<DraftMap>(loadDrafts);
+  const drafts = active.drafts;
+
+  // setProject / setDrafts operate on the active font within the library, so
+  // the rest of the editor is unchanged from the single-project version.
+  const setProject = useCallback((updater: SetStateAction<Project>) => {
+    setLibrary((lib) => ({
+      ...lib,
+      fonts: lib.fonts.map((f) =>
+        f.id === lib.activeId
+          ? { ...f, project: typeof updater === 'function' ? (updater as (p: Project) => Project)(f.project) : updater }
+          : f
+      ),
+    }));
+  }, []);
+  const setDrafts = useCallback((updater: SetStateAction<DraftMap>) => {
+    setLibrary((lib) => ({
+      ...lib,
+      fonts: lib.fonts.map((f) =>
+        f.id === lib.activeId
+          ? { ...f, drafts: typeof updater === 'function' ? (updater as (d: DraftMap) => DraftMap)(f.drafts) : updater }
+          : f
+      ),
+    }));
+  }, []);
+
   const [currentChar, setCurrentChar] = useState('A');
   const [tool, setTool] = useState<StitchType>('x');
   const [shade, setShade] = useState<StitchShade>('solid');
@@ -94,15 +123,11 @@ export default function App() {
   // bump to re-render undo/redo button state after history mutations
   const [, setHistoryTick] = useState(0);
 
-  // autosave, debounced
+  // autosave the whole library (all fonts + drafts), debounced
   useEffect(() => {
-    const t = setTimeout(() => saveProject(project), 400);
+    const t = setTimeout(() => saveLibrary(library), 400);
     return () => clearTimeout(t);
-  }, [project]);
-  useEffect(() => {
-    const t = setTimeout(() => saveDrafts(drafts), 400);
-    return () => clearTimeout(t);
-  }, [drafts]);
+  }, [library]);
 
   const burnedStitches = useCallback(
     (char: string): Stitches => project.glyphs[char]?.stitches ?? EMPTY_STITCHES,
@@ -138,6 +163,13 @@ export default function App() {
   useEffect(() => {
     setSelection(new Set());
   }, [currentChar]);
+
+  // switching fonts: per-glyph undo history and selection don't carry over
+  useEffect(() => {
+    historyRef.current.clear();
+    setSelection(new Set());
+    setHistoryTick((t) => t + 1);
+  }, [activeId]);
 
   const historyFor = (char: string): GlyphHistory => {
     let h = historyRef.current.get(char);
@@ -445,23 +477,95 @@ export default function App() {
     setProject((p) => ({ ...p, guides: clampGuides(guides, p.gridSize) }));
   };
 
-  /** Delete all saved glyphs and drafts, keeping name and grid settings. */
+  /** Delete all saved glyphs and drafts of the active font, keeping settings. */
   const clearFont = () => {
     historyRef.current.clear();
     setDrafts(new Map());
     setSelection(new Set());
-    clearSavedDrafts();
     setProject((p) => ({ ...p, glyphs: {} }));
   };
 
-  const resetProject = () => {
-    historyRef.current.clear();
-    setDrafts(new Map());
-    setSelection(new Set());
-    clearSavedDrafts();
-    clearSavedProject();
-    setProject(createProject());
-    setCurrentChar('A');
+  // ---- font tabs (multiple fonts) ----
+  const cloneProject = (p: Project, name: string): Project => ({
+    ...p,
+    name,
+    metrics: { ...p.metrics },
+    guides: p.guides.map((g) => ({ ...g, id: newGuideId() })),
+    glyphs: Object.fromEntries(
+      Object.entries(p.glyphs).map(([c, g]) => [c, { ...g, stitches: new Map(g.stitches) }])
+    ),
+  });
+
+  const selectFont = (id: string) =>
+    setLibrary((lib) => (lib.activeId === id ? lib : { ...lib, activeId: id }));
+
+  const addFont = () =>
+    setLibrary((lib) => {
+      const e = createFontEntry();
+      return { fonts: [...lib.fonts, e], activeId: e.id };
+    });
+
+  const renameFont = (id: string, name: string) =>
+    setLibrary((lib) => ({
+      ...lib,
+      fonts: lib.fonts.map((f) => (f.id === id ? { ...f, project: { ...f.project, name } } : f)),
+    }));
+
+  const duplicateFont = (id: string) =>
+    setLibrary((lib) => {
+      const idx = lib.fonts.findIndex((f) => f.id === id);
+      if (idx < 0) return lib;
+      const copy: FontEntry = {
+        id: newFontId(),
+        project: cloneProject(lib.fonts[idx].project, `${lib.fonts[idx].project.name} copy`),
+        drafts: new Map(),
+      };
+      const fonts = [...lib.fonts.slice(0, idx + 1), copy, ...lib.fonts.slice(idx + 1)];
+      return { fonts, activeId: copy.id };
+    });
+
+  const deleteFont = (id: string) => {
+    const f = library.fonts.find((x) => x.id === id);
+    if (!window.confirm(`Delete "${f?.project.name || 'this font'}"? This can't be undone.`)) return;
+    setLibrary((lib) => {
+      const idx = lib.fonts.findIndex((x) => x.id === id);
+      let fonts = lib.fonts.filter((x) => x.id !== id);
+      if (fonts.length === 0) fonts = [createFontEntry()];
+      const activeId = lib.activeId === id ? fonts[Math.min(idx, fonts.length - 1)].id : lib.activeId;
+      return { fonts, activeId };
+    });
+  };
+
+  const reorderFonts = (from: number, to: number) =>
+    setLibrary((lib) => {
+      const fonts = [...lib.fonts];
+      const [m] = fonts.splice(from, 1);
+      fonts.splice(to, 0, m);
+      return { ...lib, fonts };
+    });
+
+  /** Add already-parsed projects as new tabs and activate the first. */
+  const importProjects = (projects: Project[]) => {
+    if (projects.length === 0) return;
+    const entries: FontEntry[] = projects.map((p) => ({ id: newFontId(), project: p, drafts: new Map() }));
+    setLibrary((lib) => ({ fonts: [...lib.fonts, ...entries], activeId: entries[0].id }));
+  };
+
+  /** Import one or more .stitchfont.json files, each as a new tab. */
+  const importFontFiles = async (files: FileList) => {
+    const projects: Project[] = [];
+    for (const file of Array.from(files)) {
+      try {
+        projects.push(deserializeProject(await file.text()));
+      } catch (err) {
+        console.warn('Skipped', file.name, err);
+      }
+    }
+    if (projects.length === 0) {
+      window.alert('No valid .stitchfont.json files found.');
+      return;
+    }
+    importProjects(projects);
   };
 
   const h = historyRef.current.get(currentChar);
@@ -479,6 +583,18 @@ export default function App() {
           />
         </label>
       </header>
+
+      <FontTabs
+        fonts={library.fonts.map((f) => ({ id: f.id, name: f.project.name }))}
+        activeId={activeId}
+        onSelect={selectFont}
+        onAdd={addFont}
+        onRename={renameFont}
+        onDelete={deleteFont}
+        onDuplicate={duplicateFont}
+        onReorder={reorderFonts}
+        onImport={importFontFiles}
+      />
 
       <div className="app-main">
         <div className="left-col">
@@ -729,14 +845,8 @@ export default function App() {
           </section>
           <ExportPanel
             project={project}
-            onImport={(p) => {
-              historyRef.current.clear();
-              setDrafts(new Map());
-              setSelection(new Set());
-              clearSavedDrafts();
-              setProject(p);
-            }}
-            onReset={resetProject}
+            onImport={importProjects}
+            onNewFont={addFont}
             onClearFont={clearFont}
           />
         </aside>

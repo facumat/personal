@@ -9,6 +9,13 @@
       "autoPort": true
     },
     {
+      "name": "cross-stitch-whiteboard",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "cross-stitch-whiteboard"],
+      "port": 5273,
+      "autoPort": true
+    },
+    {
       "name": "static-site",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["--yes", "http-server", "-p", "8899", "-c-1", "--silent"],
