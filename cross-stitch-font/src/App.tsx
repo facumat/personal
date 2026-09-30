@@ -17,9 +17,10 @@ import {
 import type { DraftMap, FontEntry, Library } from './lib/projectStorage';
 import {
   createFontEntry,
-  deserializeProject,
+  downloadLibraryJSON,
   loadLibrary,
   newFontId,
+  parseImportFile,
   saveLibrary,
 } from './lib/projectStorage';
 import { GLYPH_SET, SAMPLER_TEXT } from './lib/glyphSet';
@@ -59,6 +60,17 @@ const SHADES: { shade: StitchShade; label: string; title: string }[] = [
 ];
 
 const EMPTY_STITCHES: Stitches = new Map();
+
+/** Shift every stitch down (dr>0) or up (dr<0) by dr rows. */
+const shiftStitches = (m: Stitches, dr: number): Stitches => {
+  if (dr === 0) return m;
+  const n: Stitches = new Map();
+  for (const [k, v] of m) {
+    const [c, r] = parseKey(k);
+    n.set(cellKey(c, r + dr), v);
+  }
+  return n;
+};
 
 const TOOLBAR_TIP =
   'Click / drag to stitch · right-click or ⌥ to unpick · pick a stitch type and a ' +
@@ -467,6 +479,56 @@ export default function App() {
   };
 
   const changeMetrics = (patch: Partial<GridMetrics>) => {
+    // moving the baseline carries the drawn shapes with it, so every glyph
+    // stays anchored to the baseline. The move is bounded so no ink is
+    // clipped off the grid.
+    if (patch.baselineRow != null) {
+      const gs = project.gridSize;
+      const oldBase = project.metrics.baselineRow;
+      const requested = Math.min(gs, Math.max(1, Math.round(patch.baselineRow)));
+      let minRow = Infinity;
+      let maxRow = -Infinity;
+      const scan = (m: Stitches) => {
+        for (const k of m.keys()) {
+          const r = parseKey(k)[1];
+          if (r < minRow) minRow = r;
+          if (r > maxRow) maxRow = r;
+        }
+      };
+      for (const g of Object.values(project.glyphs)) scan(g.stitches);
+      for (const s of drafts.values()) scan(s);
+      let delta = requested - oldBase;
+      if (minRow !== Infinity) {
+        delta = Math.min(gs - 1 - maxRow, Math.max(-minRow, delta));
+      }
+      const newBase = oldBase + delta;
+      if (delta !== 0) {
+        historyRef.current.clear();
+        setHistoryTick((t) => t + 1);
+        setSelection(new Set());
+      }
+      setProject((p) => ({
+        ...p,
+        metrics: clampMetrics({ ...p.metrics, baselineRow: newBase }, p.gridSize),
+        glyphs:
+          delta === 0
+            ? p.glyphs
+            : Object.fromEntries(
+                Object.entries(p.glyphs).map(([c, g]) => [
+                  c,
+                  { ...g, stitches: shiftStitches(g.stitches, delta) },
+                ])
+              ),
+      }));
+      if (delta !== 0) {
+        setDrafts((d) => {
+          const n = new Map<string, Stitches>();
+          for (const [c, s] of d) n.set(c, shiftStitches(s, delta));
+          return n;
+        });
+      }
+      return;
+    }
     setProject((p) => ({
       ...p,
       metrics: clampMetrics({ ...p.metrics, ...patch }, p.gridSize),
@@ -551,22 +613,25 @@ export default function App() {
     setLibrary((lib) => ({ fonts: [...lib.fonts, ...entries], activeId: entries[0].id }));
   };
 
-  /** Import one or more .stitchfont.json files, each as a new tab. */
+  /** Import files as new tabs. A single-font file adds one; a full-library
+   *  backup adds every font it holds. */
   const importFontFiles = async (files: FileList) => {
     const projects: Project[] = [];
     for (const file of Array.from(files)) {
       try {
-        projects.push(deserializeProject(await file.text()));
+        projects.push(...parseImportFile(await file.text()));
       } catch (err) {
         console.warn('Skipped', file.name, err);
       }
     }
     if (projects.length === 0) {
-      window.alert('No valid .stitchfont.json files found.');
+      window.alert('No valid font files found.');
       return;
     }
     importProjects(projects);
   };
+
+  const exportLibrary = () => downloadLibraryJSON(library);
 
   const h = historyRef.current.get(currentChar);
 
@@ -845,7 +910,9 @@ export default function App() {
           </section>
           <ExportPanel
             project={project}
+            fontCount={library.fonts.length}
             onImport={importProjects}
+            onExportAll={exportLibrary}
             onNewFont={addFont}
             onClearFont={clearFont}
           />

@@ -3,20 +3,29 @@ import type { Project } from '../lib/model';
 import type { FontVariant } from '../lib/fontBuilder';
 import { buildFont, downloadFont } from '../lib/fontBuilder';
 import {
-  deserializeProject,
   downloadProjectJSON,
+  parseImportFile,
   slugify,
 } from '../lib/projectStorage';
 
 interface Props {
   project: Project;
+  fontCount: number;
   /** Imported files open as new font tabs. */
   onImport: (projects: Project[]) => void;
+  onExportAll: () => void;
   onNewFont: () => void;
   onClearFont: () => void;
 }
 
-export default function ExportPanel({ project, onImport, onNewFont, onClearFont }: Props) {
+export default function ExportPanel({
+  project,
+  fontCount,
+  onImport,
+  onExportAll,
+  onNewFont,
+  onClearFont,
+}: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const drawnCount = Object.values(project.glyphs).filter((g) => g.stitches.size > 0).length;
@@ -54,10 +63,10 @@ export default function ExportPanel({ project, onImport, onNewFont, onClearFont 
 
   const importFiles = async (files: FileList) => {
     setError(null);
-    const projects = [];
+    const projects: Project[] = [];
     for (const file of Array.from(files)) {
       try {
-        projects.push(deserializeProject(await file.text()));
+        projects.push(...parseImportFile(await file.text()));
       } catch {
         setError(`Couldn't read ${file.name}.`);
       }
@@ -99,6 +108,9 @@ export default function ExportPanel({ project, onImport, onNewFont, onClearFont 
           Import JSON
         </button>
       </div>
+      <button className="btn" onClick={onExportAll}>
+        Export all fonts{fontCount > 1 ? ` (${fontCount})` : ''}
+      </button>
       <input
         ref={fileRef}
         type="file"
@@ -110,7 +122,10 @@ export default function ExportPanel({ project, onImport, onNewFont, onClearFont 
           e.target.value = '';
         }}
       />
-      <p className="hint">Import opens each file as a new font tab.</p>
+      <p className="hint">
+        “Export JSON” saves this font; “Export all fonts” saves every tab in one backup file.
+        Import opens each file (single font or a full backup) as new tabs.
+      </p>
       <button className="btn btn-quiet" onClick={onNewFont}>
         New font
       </button>

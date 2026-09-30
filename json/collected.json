@@ -13,6 +13,21 @@
         "thoughts": "thoughts"
     },
     {
+        "thing":"Archivo Scoeidades en Movimiento",
+        "from":"UdelaR",
+        "url":"https://asm.udelar.edu.uy/collections/show/19",
+        "type":"archive",
+        "tags":["queerness", "taxonomy"],
+        "thoughts":"Tremendo archivo de la historia de los movimientos LGBTIQ+ en Uruguay, y otros movimientos como los feminismos, movimientos afro y comunitarios."
+    },
+    {
+        "thing":"RSN stitch bank",
+        "from":"RSN",
+        "url":"https://rsnstitchbank.org/technique/berlin-wool-work",
+        "type":"archive",
+        "tags":["embroidery"]
+    },
+    {
         "thing":"The AIDS memorial quilt",
         "from":"USA National AIDS Memorial",
         "url":"https://www.aidsmemorial.org/interactive-aids-quilt",

@@ -190,8 +190,8 @@ export function createFontEntry(project?: Project): FontEntry {
   return { id: newFontId(), project: project ?? createProject(), drafts: new Map() };
 }
 
-function serializeLibrary(lib: Library): string {
-  const data: LibraryJSON = {
+function toLibraryJSON(lib: Library): LibraryJSON {
+  return {
     version: 1,
     activeId: lib.activeId,
     fonts: lib.fonts.map((f) => ({
@@ -200,10 +200,13 @@ function serializeLibrary(lib: Library): string {
       drafts: draftsToJSON(f.drafts),
     })),
   };
-  return JSON.stringify(data);
 }
 
-function deserializeLibrary(json: string): Library {
+function serializeLibrary(lib: Library): string {
+  return JSON.stringify(toLibraryJSON(lib));
+}
+
+export function deserializeLibrary(json: string): Library {
   const data = JSON.parse(json) as LibraryJSON;
   const fonts: FontEntry[] = (data.fonts ?? [])
     .filter((f) => f && f.project)
@@ -215,6 +218,18 @@ function deserializeLibrary(json: string): Library {
   if (fonts.length === 0) fonts.push(createFontEntry());
   const activeId = fonts.some((f) => f.id === data.activeId) ? data.activeId : fonts[0].id;
   return { fonts, activeId };
+}
+
+/** Parse an imported file: a full library backup yields every font, a single
+ *  project file yields one. Used so Import handles both kinds transparently. */
+export function parseImportFile(text: string): Project[] {
+  const data = JSON.parse(text) as { fonts?: { project?: ProjectJSON }[] };
+  if (data && Array.isArray(data.fonts)) {
+    return data.fonts
+      .filter((f) => f && f.project)
+      .map((f) => fromProjectJSON(f.project as ProjectJSON));
+  }
+  return [fromProjectJSON(data as unknown as ProjectJSON)];
 }
 
 /** Load the library, migrating a legacy single project/drafts if present. */
@@ -257,6 +272,19 @@ export function saveLibrary(lib: Library): void {
 }
 
 // ---- file export ----
+
+/** One JSON file containing every font in the library (a full backup). */
+export function downloadLibraryJSON(lib: Library): void {
+  const blob = new Blob([JSON.stringify(toLibraryJSON(lib), null, 2)], {
+    type: 'application/json',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'all-fonts.stitchlib.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export function downloadProjectJSON(project: Project): void {
   const blob = new Blob([serializeProject(project)], { type: 'application/json' });
