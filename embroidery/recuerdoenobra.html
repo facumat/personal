@@ -107,7 +107,7 @@ body.pseudo header{display:none}
     <button id="exitfs" hidden>Exit full screen</button>
   </div>
   <aside>
-    <div class="aside-head"><h2>Colors</h2><p>Tap a color to highlight where it goes.</p></div>
+    <div class="aside-head"><h2>Colors</h2><p>Tap a color here or a stitch on the chart to focus on it. Tap again to show all.</p></div>
     <div id="legend" role="listbox" aria-label="Colors"></div>
     <button class="clear" id="clear" hidden>Show all colors</button>
   </aside>
@@ -317,11 +317,25 @@ function showReadout(h){
 }
 scroller.addEventListener('mousemove',e=>{ hover=cellAt(e); showReadout(hover); req(); });
 scroller.addEventListener('mouseleave',()=>{ hover=null; showReadout(null); req(); });
-scroller.addEventListener('click',e=>{ hover=cellAt(e); showReadout(hover); req(); });
+scroller.addEventListener('click',e=>{
+  hover=cellAt(e); showReadout(hover);
+  if(!hover){ req(); return; }
+  const v=idx[hover.r*W+hover.c];
+  if(hideBg && v===BG){ if(sel>=0) selectColor(sel); else req(); return; }
+  selectColor(v,true);
+});
 
 // ---------- legend ----------
 const legend=document.getElementById('legend'), clearBtn=document.getElementById('clear');
 const items=[];
+function selectColor(i,fromChart){
+  sel = sel===i ? -1 : i;
+  items.forEach((x,j)=>{x.classList.toggle('on',j===sel);x.setAttribute('aria-selected',j===sel);});
+  clearBtn.hidden = sel<0;
+  if(sel===BG && hideBg){ hideBg=false; document.getElementById('hidebg').checked=false; }
+  if(fromChart && sel>=0) items[sel].scrollIntoView({block:'nearest'});
+  draw();
+}
 pal.forEach((p,i)=>{
   const el=document.createElement('div'); el.className='item'+(i===BG?' bg':''); el.tabIndex=0; el.setAttribute('role','option');
   const c=document.createElement('canvas'); const d=window.devicePixelRatio||1; c.width=26*d; c.height=26*d;
@@ -331,8 +345,7 @@ pal.forEach((p,i)=>{
   const sw=document.createElement('span'); sw.className='sw'; sw.style.background=p.css; el.append(sw);
   const n=document.createElement('span'); n.className='num'; n.textContent=p.k; el.append(n);
   const ct=document.createElement('span'); ct.className='cnt'; ct.textContent=counts[i].toLocaleString('en-US'); el.append(ct);
-  const pick=()=>{ sel = sel===i ? -1 : i; items.forEach((x,j)=>{x.classList.toggle('on',j===sel);x.setAttribute('aria-selected',j===sel);}); clearBtn.hidden = sel<0;
-    if(sel===BG && hideBg){ hideBg=false; document.getElementById('hidebg').checked=false; } draw(); };
+  const pick=()=>selectColor(i);
   el.onclick=pick; el.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();pick();} };
   legend.append(el); items.push(el);
 });
@@ -355,16 +368,3 @@ fsBtn.onclick=()=>{
   if(canNative){ (root.requestFullscreen||root.webkitRequestFullscreen).call(root); }
   else { document.body.classList.add('pseudo'); updateFs(); }
 };
-function exitFull(){
-  if(document.body.classList.contains('pseudo')){ document.body.classList.remove('pseudo'); updateFs(); return; }
-  (document.exitFullscreen||document.webkitExitFullscreen).call(document);
-}
-exitBtn.onclick=exitFull;
-document.addEventListener('fullscreenchange',updateFs);
-document.addEventListener('webkitfullscreenchange',updateFs);
-
-if(document.fonts) document.fonts.ready.then(draw);
-size();
-</script>
-</body>
-</html>
