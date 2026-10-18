@@ -368,3 +368,16 @@ fsBtn.onclick=()=>{
   if(canNative){ (root.requestFullscreen||root.webkitRequestFullscreen).call(root); }
   else { document.body.classList.add('pseudo'); updateFs(); }
 };
+function exitFull(){
+  if(document.body.classList.contains('pseudo')){ document.body.classList.remove('pseudo'); updateFs(); return; }
+  (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+}
+exitBtn.onclick=exitFull;
+document.addEventListener('fullscreenchange',updateFs);
+document.addEventListener('webkitfullscreenchange',updateFs);
+
+if(document.fonts) document.fonts.ready.then(draw);
+size();
+</script>
+</body>
+</html>
