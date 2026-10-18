@@ -65,6 +65,12 @@ aside{width:290px;flex:none;background:var(--panel);border-left:1px solid var(--
 .item.bg .num::after{content:" background";font-weight:400;color:var(--muted);font-size:12px}
 .clear{margin:8px 14px 12px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;padding:7px;border-radius:8px;cursor:pointer}
 .clear[hidden]{display:none}
+.tbtn{border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;padding:6px 11px;border-radius:8px;cursor:pointer}
+.tbtn:hover{background:var(--hover)}
+body.nocolors aside{display:none}
+body.pseudo header{display:none}
+#exitfs{position:absolute;right:12px;top:42px;z-index:5;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;padding:7px 12px;border-radius:8px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+#exitfs[hidden]{display:none}
 @media (max-width:760px){
   main{flex-direction:column}
   aside{width:auto;height:38vh;border-left:0;border-top:1px solid var(--line)}
@@ -89,6 +95,8 @@ aside{width:290px;flex:none;background:var(--panel);border-left:1px solid var(--
       <button data-grid="20" aria-pressed="false">20 × 20</button>
     </div>
     <label class="chk"><input type="checkbox" id="hidebg" checked> Hide background (3756)</label>
+    <button class="tbtn" id="togglecolors" aria-pressed="false">Hide colors</button>
+    <button class="tbtn" id="fs">Full screen</button>
   </div>
 </header>
 <main>
@@ -96,6 +104,7 @@ aside{width:290px;flex:none;background:var(--panel);border-left:1px solid var(--
     <div id="scroller"><div id="spacer"></div></div>
     <canvas id="cv"></canvas>
     <div class="readout" id="readout"></div>
+    <button id="exitfs" hidden>Exit full screen</button>
   </div>
   <aside>
     <div class="aside-head"><h2>Colors</h2><p>Tap a color to highlight where it goes.</p></div>
@@ -328,6 +337,31 @@ pal.forEach((p,i)=>{
   legend.append(el); items.push(el);
 });
 clearBtn.onclick=()=>{ sel=-1; items.forEach(x=>{x.classList.remove('on');x.setAttribute('aria-selected',false);}); clearBtn.hidden=true; draw(); };
+
+// ---------- hide colors & full screen ----------
+const colorsBtn=document.getElementById('togglecolors'), fsBtn=document.getElementById('fs'), exitBtn=document.getElementById('exitfs');
+colorsBtn.onclick=()=>{
+  const off=document.body.classList.toggle('nocolors');
+  colorsBtn.textContent = off ? 'Show colors' : 'Hide colors';
+  colorsBtn.setAttribute('aria-pressed', off);
+  size();
+};
+const root=document.documentElement;
+const canNative = !!(root.requestFullscreen || root.webkitRequestFullscreen);
+const isFull = ()=> !!(document.fullscreenElement || document.webkitFullscreenElement) || document.body.classList.contains('pseudo');
+function updateFs(){ const f=isFull(); fsBtn.textContent = f ? 'Exit full screen' : 'Full screen'; exitBtn.hidden = !document.body.classList.contains('pseudo'); size(); }
+fsBtn.onclick=()=>{
+  if(isFull()) return exitFull();
+  if(canNative){ (root.requestFullscreen||root.webkitRequestFullscreen).call(root); }
+  else { document.body.classList.add('pseudo'); updateFs(); }
+};
+function exitFull(){
+  if(document.body.classList.contains('pseudo')){ document.body.classList.remove('pseudo'); updateFs(); return; }
+  (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+}
+exitBtn.onclick=exitFull;
+document.addEventListener('fullscreenchange',updateFs);
+document.addEventListener('webkitfullscreenchange',updateFs);
 
 if(document.fonts) document.fonts.ready.then(draw);
 size();
