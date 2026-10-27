@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cross-stitch chart, 352 × 334</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&amp;display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#eef1f5; --panel:#ffffff; --ink:#232046; --muted:#6b6880; --line:#d9dce5;
@@ -115,13 +114,13 @@ body.pseudo header{display:none}
       <button data-grid="10" aria-pressed="true">10 × 10</button>
       <button data-grid="20" aria-pressed="false">20 × 20</button>
     </div>
-    <label class="chk"><input type="checkbox" id="hidebg" checked> Hide background (3756)</label>
+    <label class="chk"><input type="checkbox" id="hidebg" checked=""> Hide background (3756)</label>
     <button class="tbtn" id="togglecolors" aria-pressed="false">Hide colors</button>
     <button class="tbtn" id="editbtn" aria-pressed="false">Edit</button>
     <button class="tbtn" id="fs">Full screen</button>
   </div>
 </header>
-<div class="editbar" id="editbar" hidden>
+<div class="editbar" id="editbar" hidden="">
   <div class="seg" role="group" aria-label="Edit tool">
     <button data-tool="move" aria-pressed="false" title="Move around the chart (M)">Move</button>
     <button data-tool="paint" aria-pressed="true" title="Paint stitches (B)">Paint</button>
@@ -130,8 +129,8 @@ body.pseudo header{display:none}
   </div>
   <span class="brush" id="brushinfo"></span>
   <div class="ebtns">
-    <button class="tbtn" id="undo" title="Undo (Ctrl/Cmd+Z)" disabled>Undo</button>
-    <button class="tbtn" id="redo" title="Redo (Shift+Ctrl/Cmd+Z)" disabled>Redo</button>
+    <button class="tbtn" id="undo" title="Undo (Ctrl/Cmd+Z)" disabled="">Undo</button>
+    <button class="tbtn" id="redo" title="Redo (Shift+Ctrl/Cmd+Z)" disabled="">Redo</button>
     <button class="tbtn primary" id="ghsave">Save to GitHub</button>
     <button class="tbtn" id="ghsettings">GitHub settings</button>
     <button class="tbtn" id="export">Download edited chart</button>
@@ -144,12 +143,12 @@ body.pseudo header{display:none}
     <div id="scroller"><div id="spacer"></div></div>
     <canvas id="cv"></canvas>
     <div class="readout" id="readout"></div>
-    <button id="exitfs" hidden>Exit full screen</button>
+    <button id="exitfs" hidden="">Exit full screen</button>
   </div>
   <aside>
     <div class="aside-head"><h2>Colors</h2><p>Tap a color here or a stitch on the chart to focus on it. Tap again to show all.</p></div>
     <div id="legend" role="listbox" aria-label="Colors"></div>
-    <button class="clear" id="clear" hidden>Show all colors</button>
+    <button class="clear" id="clear" hidden="">Show all colors</button>
   </aside>
 </main>
 <dialog id="ghdlg">
@@ -623,6 +622,4 @@ if(loadedSaved){ refreshCounts(); }
 
 if(document.fonts) document.fonts.ready.then(draw);
 size();
-</script>
-</body>
-</html>
+</script></body></html>
