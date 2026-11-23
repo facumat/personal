@@ -375,16 +375,11 @@
         }
 
         // Fetch and display collected items
-        Promise.all([
-            fetch('json/watched.json').then(response => response.json()),
-            fetch('json/collected.json').then(response => response.json()).catch(() => []),
-            fetch('json/read.json').then(response => response.json()).catch(() => []),
-            fetch('json/listened.json').then(response => response.json()).catch(() => [])
-        ])
-        .then(([watched, collected, read, listened]) => {
-            // Combine all arrays
-            allItems = [...watched, ...collected, ...read, ...listened];
-            
+        fetch('json/collected.json')
+        .then(response => response.json())
+        .then(collected => {
+            allItems = collected;
+
             // Sort by date, newest first
             allItems.sort((a, b) => {
                 const dateA = a.consumed || a.collected || '';
