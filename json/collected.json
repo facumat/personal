@@ -39,12 +39,14 @@
         "thing":"LibraryThing",
         "url":"https://www.librarything.com/",
         "type":"resource",
+        "consumed":"2026-9-19",
         "tags":["taxonomy", "literature"],
         "thoughts":"maybe can replace goodreads w this?"
     },
     {
         "thing":"Cybernetic Library",
         "url":"https://www.cyberneticslibrary.org/",
+        "consumed":"2026-9-19",
         "type":"community",
         "tags":["library", "literature"]
     },
