@@ -384,7 +384,22 @@
         .then(([watched, collected, read, listened]) => {
             // Combine all arrays
             allItems = [...watched, ...collected, ...read, ...listened];
-        
+            
+            // Sort by date, newest first
+            allItems.sort((a, b) => {
+                const dateA = a.consumed || a.collected || '';
+                const dateB = b.consumed || b.collected || '';
+                
+                // Convert to actual Date objects for proper comparison
+                if (!dateA && !dateB) return 0;
+                if (!dateA) return 1;  // Items without dates go to end
+                if (!dateB) return -1;
+                
+                const timeA = new Date(dateA).getTime();
+                const timeB = new Date(dateB).getTime();
+                
+                return timeB - timeA;  // Newest first
+            });
 
             // Filter out null items
             allItems = allItems.filter(item => (item.thing !== null));
