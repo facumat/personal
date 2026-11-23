@@ -15,6 +15,7 @@
     {
         "thing":"Archivo Scoeidades en Movimiento",
         "from":"UdelaR",
+        "consumed":"2026-11-25",
         "url":"https://asm.udelar.edu.uy/collections/show/19",
         "type":"archive",
         "tags":["queerness", "taxonomy"],
@@ -23,6 +24,7 @@
     {
         "thing":"RSN stitch bank",
         "from":"RSN",
+        "consumed":"2026-11-25",
         "url":"https://rsnstitchbank.org/technique/berlin-wool-work",
         "type":"archive",
         "tags":["embroidery"]
@@ -32,6 +34,7 @@
         "from":"USA National AIDS Memorial",
         "url":"https://www.aidsmemorial.org/interactive-aids-quilt",
         "type":"archive",
+        "consumed":"2026-11-25",
         "tags":["queerness", "aids", "embroidery"],
         "thoughts":"Great archive of the aids memorial quilt, with ability to zoom in the hundres of patches."
     },
