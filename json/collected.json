@@ -104,13 +104,13 @@
         "from": "Meghna Rao",
         "year": "2026",
         "consumed": "2026-10-25",
-        "utl": "https://www.are.na/editorial/an-interview-with-the-people-behind-the-cybernetics-library",
         "type": "article",
         "tags": [
             "library",
             "literature"
         ],
-        "thoughts": "Really inspiring to think about a queer library."
+        "thoughts": "Really inspiring to think about a queer library.",
+        "url": "https://www.are.na/editorial/an-interview-with-the-people-behind-the-cybernetics-library"
     },
     {
         "thing": "LibraryThing",
@@ -171,7 +171,7 @@
         "from": "Elizabeth Parker",
         "year": "1813",
         "consumed": "2026-5-25",
-        "image": "..images/collected/elizabethparker.jpg",
+        "image": "images/collected/elizabethparker.jpg",
         "url": "https://www.vam.ac.uk/articles/katerina-jebb-installation#slideshow=55436&slide=0",
         "type": "art",
         "tags": [
@@ -207,12 +207,12 @@
         "from": "Embroiderer's Association of Canada",
         "type": "community",
         "consumed": "2026-5-12",
-        "utl": "https://eac-acb.ca/product/advanced-counted-thread",
         "tags": [
             "textile",
             "embroidery"
         ],
-        "thoughts": "Has a beginner and advanced course on counted thread techniques. Looking foraward to do them"
+        "thoughts": "Has a beginner and advanced course on counted thread techniques. Looking foraward to do them",
+        "url": "https://eac-acb.ca/product/advanced-counted-thread"
     },
     {
         "thing": " Desorientación queer, desorden decolonial. ",
@@ -296,13 +296,13 @@
         "thing": "ONE the homosexual viewpoint - Digital magazines collection",
         "from": "Houston LGBT history",
         "type": "archive",
-        "images": "../images/collected/onemagarchive.png",
         "url": "https://www.houstonlgbthistory.org/ONE.html",
         "consumed": "2026-5-4",
         "tags": [
             "queerness",
             "literature"
-        ]
+        ],
+        "image": "images/collected/onemagarchive.png"
     },
     {
         "thing": "One Institute",
@@ -405,11 +405,11 @@
     {
         "thing": "La Grazia",
         "from": "Paolo Sorrentino",
-        "date": "2025",
         "consumed": "2026-3-29",
         "type": "movie",
         "genre": "drama",
-        "thoughts": "Fun fun. Sorrentino tiene un superpoder de hacer cine telenovelesco sin lo crigne de las telenovelas. La música siempre hilando las escenas una tras otra."
+        "thoughts": "Fun fun. Sorrentino tiene un superpoder de hacer cine telenovelesco sin lo crigne de las telenovelas. La música siempre hilando las escenas una tras otra.",
+        "year": "2025"
     },
     {
         "thing": "Kajillionaire",
@@ -421,7 +421,7 @@
     },
     {
         "thing": "faggoting",
-        "image": "../images/collected/faggoting.jpg",
+        "image": "images/collected/faggoting.jpg",
         "type": "image",
         "consumed": "2026-3-25",
         "tags": [
@@ -1453,7 +1453,7 @@
         "thing": "The ghost of flea",
         "from": "William Blake",
         "year": "1819",
-        "image": "../images/collected/ghost-of-flea-market-william-blak.webp",
+        "image": "images/collected/ghost-of-flea-market-william-blak.webp",
         "url": "https://en.wikipedia.org/wiki/The_Ghost_of_a_Flea#",
         "consumed": "2025-5-17",
         "type": "art",
