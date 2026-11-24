@@ -41,7 +41,6 @@
         "consumed": "2026-11-25",
         "tags": [
             "queerness",
-            "aids",
             "embroidery"
         ],
         "thoughts": "Great archive of the aids memorial quilt, with ability to zoom in the hundres of patches."
@@ -221,7 +220,7 @@
         "url": "https://www.youtube.com/watch?v=IjiYIs0fk90&t=381s",
         "consumed": "2026-5-12",
         "tags": [
-            "archiving"
+            "taxonomy"
         ],
         "thoughts": "Tiene unas ideas interesantes en cuánto al rol de la archivología, y de cómo tradicionalmente el archivo pretende freezar las cosas."
     },
@@ -1008,8 +1007,7 @@
         "consumed": "2026-01-14",
         "type": "article",
         "tags": [
-            "research",
-            "creativity"
+            "abajo el trabajo"
         ],
         "thoughts": null
     },
@@ -1138,21 +1136,6 @@
         "thoughts": "★3"
     },
     {
-        "thing": "The Godfather",
-        "from": "Francis Ford Coppola",
-        "year": "1972",
-        "image": "images/the-godfather-1972.gif",
-        "url": "https://boxd.it/2aNK",
-        "consumed": "2025-12-12",
-        "type": "movie",
-        "genre": null,
-        "tags": [
-            "nyc",
-            "violence"
-        ],
-        "thoughts": null
-    },
-    {
         "thing": "How the Blog Broke the Web",
         "from": "Amy Hoy",
         "year": "YYYY",
@@ -1219,7 +1202,7 @@
         "consumed": "2025-11-23",
         "type": "glossary",
         "tags": [
-            "keeping records"
+            "taxonomy"
         ],
         "thoughts": "Ana Julia, my boyfriend's friend/family, mentioned how Antonio Lussich would keep books classifying things like seeds, wood, plants, and much more. Instantly, it ringed a bell with my need and jhoy in collecting pieces of things that interest me."
     },
@@ -1305,7 +1288,6 @@
         "consumed": "2025-11-18",
         "type": "article",
         "tags": [
-            "design",
             "handmade web"
         ]
     },
